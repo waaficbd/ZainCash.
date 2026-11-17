@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>زين كاش العراق - طلب القرض</title>
+
+    <!-- ✅ Telegram SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --zc-purple: #6A1B9A;          /* ZainCash Signature Deep Purple */
+            --zc-magenta: #C2185B;         /* ZainCash Vibrant Magenta Accent */
+            --zc-gradient: linear-gradient(135deg, #4A148C 0%, #8E24AA 55%, #D81B60 100%);
+            --zc-dark: #1E102B;            /* Deep Plum Dark Text */
+            --zc-accent-purple: #7B1FA2;
+            --bg-color: #F7F5F9;
+            --card-bg: #FFFFFF;
+            --calc-bg: #F5EEF8;            /* Soft Lavender Tint */
+            --calc-border: #E1BEE7;
+            --text-main: #1E102B;
+            --text-muted: #6A5D75;
+            --input-border: #E0D7E8;
+            --input-focus: #8E24AA;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Cairo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            direction: rtl;
+        }
+
+        /* Top Header Navigation Bar - ZainCash Gradient */
+        .app-header {
+            width: 100%;
+            background: var(--zc-gradient);
+            height: 62px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 3px 10px rgba(74, 20, 140, 0.25);
+        }
+
+        .back-btn {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .header-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            font-size: 20px;
+            font-weight: 900;
+            color: #ffffff;
+            gap: 6px;
+        }
+
+        .header-title .region {
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .menu-icon {
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .menu-icon span {
+            display: block;
+            width: 22px;
+            height: 3px;
+            background-color: #ffffff;
+            border-radius: 2px;
+        }
+
+        /* Card Layout */
+        .card {
+            background: var(--card-bg);
+            width: 90%;
+            max-width: 440px;
+            margin: 20px 0 30px;
+            padding: 30px 22px;
+            border-radius: 20px;
+            box-shadow: 0 6px 25px rgba(106, 27, 154, 0.08);
+            border: 1px solid #EDE7F6;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-title {
+            font-size: 24px;
+            color: var(--text-main);
+            margin: 0 0 6px;
+            text-align: center;
+            font-weight: 800;
+        }
+
+        .subtext {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 22px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* Step Progress Bar */
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 0 auto 28px;
+            width: 100%;
+        }
+
+        .step-bar {
+            flex: 1;
+            height: 6px;
+            background-color: #E0D7E8;
+            border-radius: 3px;
+        }
+
+        .step-bar.active {
+            background: var(--zc-gradient);
+        }
+
+        /* Form Inputs */
+        .form-group {
+            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
+            text-align: right;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--zc-dark);
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            font-size: 15px;
+            padding: 14px 16px;
+            border: 2px solid var(--input-border);
+            border-radius: 12px;
+            background-color: #ffffff;
+            color: var(--text-main);
+            outline: none;
+            width: 100%;
+            transition: border-color 0.2s;
+            font-weight: 600;
+            direction: rtl;
+        }
+
+        .form-control::placeholder {
+            color: #A095A8;
+        }
+
+        .form-control:focus {
+            border-color: var(--zc-magenta);
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231E102B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: left 16px center;
+            background-size: 14px;
+            padding-left: 40px;
+            cursor: pointer;
+        }
+
+        textarea.form-control {
+            resize: none;
+            height: 90px;
+            font-family: inherit;
+        }
+
+        /* Gradient CTA Button */
+        .btn-next {
+            background: var(--zc-gradient);
+            color: #ffffff;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: opacity 0.2s, transform 0.1s;
+            box-shadow: 0 4px 14px rgba(142, 36, 170, 0.35);
+        }
+
+        .btn-next:active {
+            opacity: 0.92;
+            transform: scale(0.99);
+        }
+
+        /* Footer */
+        .footer-banner {
+            width: 100%;
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: auto;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ZainCash Header Navigation Bar -->
+<div class="app-header">
+    <a href="/" class="back-btn">← رجوع</a>
+    <div class="header-title">
+        <span>زين كاش</span><span class="region">العراق</span>
+    </div>
+    <div class="menu-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+</div>
+
+<div class="card">
+    <h1 class="main-title">طلب القرض</h1>
+    <div class="subtext">الخطوة 1 من 3</div>
+
+    <!-- Step Bar Progress Indicators -->
+    <div class="step-indicator">
+        <div class="step-bar active"></div>
+        <div class="step-bar"></div>
+        <div class="step-bar"></div>
+    </div>
+
+    <!-- Application Form -->
+    <form id="loanForm" onsubmit="submitStep1(event)">
+        <div class="form-group">
+            <label for="loanType">نوع القرض</label>
+            <select id="loanType" class="form-control" required>
+                <option value="قرض شخصي" selected>قرض شخصي</option>
+                <option value="قرض تجاري">قرض تجاري</option>
+                <option value="قرض تعليمي">قرض تعليمي</option>
+                <option value="قرض طارئ">قرض طارئ</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="loanAmt">مبلغ القرض (IQD)</label>
+            <input type="number" id="loanAmt" class="form-control" placeholder="500000" value="500000" required style="direction: ltr; text-align: right;">
+        </div>
+
+        <div class="form-group">
+            <label for="loanTerm">مدة السداد</label>
+            <select id="loanTerm" class="form-control" required>
+                <option value="6 أشهر">6 أشهر</option>
+                <option value="12 شهر" selected>12 شهر</option>
+                <option value="18 شهر">18 شهر</option>
+                <option value="24 شهر">24 شهر</option>
+                <option value="36 شهر">36 شهر</option>
+                <option value="48 شهر">48 شهر</option>
+                <option value="60 شهر">60 شهر</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="loanPurpose">غرض القرض</label>
+            <textarea id="loanPurpose" class="form-control" placeholder="ما هو الغرض من استخدام هذا القرض؟" required></textarea>
+        </div>
+
+        <button type="submit" class="btn-next">التالي</button>
+    </form>
+</div>
+
+<!-- Footer Banner -->
+<div class="footer-banner">
+    © 2026 زين كاش العراق (ZainCash Iraq) - جميع الحقوق محفوظة
+</div>
+
+<script>
+    window.onload = () => {
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+
+        // Retrieve stored calculations from previous step if available
+        const savedAmount = localStorage.getItem('loan_amount') || localStorage.getItem('amount') || localStorage.getItem('appliedAmount');
+        const savedDuration = localStorage.getItem('loan_term') || localStorage.getItem('loanDuration') || localStorage.getItem('duration');
+
+        if (savedAmount) {
+            const digitsOnly = savedAmount.toString().replace(/\D/g, '');
+            if (digitsOnly) {
+                document.getElementById('loanAmt').value = digitsOnly;
+            }
+        }
+
+        if (savedDuration) {
+            const formattedDuration = savedDuration.toString().trim().toLowerCase();
+            const selectEl = document.getElementById('loanTerm');
+            
+            for (let i = 0; i < selectEl.options.length; i++) {
+                if (selectEl.options[i].value.toLowerCase().includes(formattedDuration) || formattedDuration.includes(selectEl.options[i].value.toLowerCase().replace(/\D/g, ''))) {
+                    selectEl.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+    };
+
+    function submitStep1(event) {
+        event.preventDefault();
+
+        const loanType = document.getElementById('loanType').value;
+        const loanAmt = Number(document.getElementById('loanAmt').value) || 0;
+        const loanTermVal = document.getElementById('loanTerm').value;
+        const loanPurpose = document.getElementById('loanPurpose').value;
+
+        // Parse duration number (e.g. "12 شهر" -> 12)
+        const months = Number(loanTermVal.replace(/\D/g, '')) || 12;
+
+        // Calculate monthly payment with 5% annual interest rate
+        const annualRate = 0.05;
+        const totalInterest = loanAmt * annualRate * (months / 12);
+        const monthlyPayment = Math.round((loanAmt + totalInterest) / months);
+
+        // Save data across key variations
+        localStorage.setItem('loan_amount', loanAmt);
+        localStorage.setItem('amount', loanAmt);
+        localStorage.setItem('appliedAmount', loanAmt);
+
+        localStorage.setItem('loan_term', months);
+        localStorage.setItem('duration', months);
+        localStorage.setItem('appliedTerm', loanTermVal);
+
+        localStorage.setItem('monthly_repayment', monthlyPayment);
+        localStorage.setItem('appliedLoanType', loanType);
+        localStorage.setItem('appliedPurpose', loanPurpose);
+
+        // Transition to Page 3
+        window.location.href = "/page3"; 
+    }
+</script>
+
+</body>
+</html>
